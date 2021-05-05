@@ -56,4 +56,4 @@ with hfr_count:
     st.text("This table shows the total number of times that a HFR position was detected in this patient since they were warded.")
     st.write(df_hfr_count)
 
-
+st.balloons()
