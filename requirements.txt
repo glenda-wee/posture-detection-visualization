@@ -3,4 +3,4 @@ pandas
 matplotlib
 sklearn
 seaborn
-streamlit = 0.81.0
+streamlit == 0.81.0
