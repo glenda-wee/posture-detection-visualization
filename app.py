@@ -1,5 +1,13 @@
 import streamlit as st
 import pandas as pd 
+import numpy as np 
+import plotly.express as px
+import matplotlib.pyplot as plt
+# import mysql.connector 
+# from mysql.connector import errorcode
+
+
+
 
 header = st.beta_container()
 dataset = st.beta_container() 
@@ -14,7 +22,6 @@ df_logs = pd.read_csv("posture_detection_logs.csv")
 
 #calculating frequency of toilet use 
 df_frequency = pd.DataFrame(columns = ["Time", "Frequency"])
-
 
 #calculating number of toilet visits per day 
 df_average_visits = df_logs.groupby("bed_number").count()
@@ -52,12 +59,13 @@ with average_visits:
     st.header("Average Number of Toilet Visits Per Day")
     st.write("This table shows the average number times each patient goes to the toilet.")
     st.write(df_average_visits)
+    
+    hist_average_visits = fig = px.bar(df_average_visits, x='Bed Number', y='Frequency', color='Bed Number')
+    st.plotly_chart(hist_average_visits)
 
 with hfr_count: 
     st.header("Patients By Their HFR Counts")
     st.write("This table shows the total number of times that a HFR position was detected in this patient since they were warded.")
     st.write(df_hfr_count)
-
-st.balloons()
 
 
