@@ -4,8 +4,20 @@ import numpy as np
 import plotly.express as px
 import matplotlib.pyplot as plt
 import datetime
-# import mysql.connector 
-# from mysql.connector import errorcode
+import sqlite3
+from sqlite3 import Error
+
+#connect database
+try:
+    conn = sqlite3.connect("Streamlit.db")
+    print("Opened database successfully")
+    
+except Exception as e:
+    print("Error during connection: ". str(e))
+
+# df_logs = conn.execute("SELECT * FROM Data")
+sql = "SELECT * FROM Data"
+
 
 st.set_page_config(layout="wide") #fills the whole webpage instead of centre column
 header = st.beta_container()
@@ -19,12 +31,20 @@ refresh_bedno, frequency = st.beta_columns(2)  # 2 by 2 grid layout
 average_visits, hfr_count = st.beta_columns(2) # 2 by 2 grid layout
 
 
-df_logs = pd.read_csv("posture_detection_logs.csv")
+#df_logs = pd.read_csv("posture_detection_logs.csv")
 
 # calculating frequency of toilet use 
+df_logs = pd.read_sql(sql, conn)
+df_logs.columns = ["Bed Number", "Time Start","Time End","HFR_Count","MFR_Count"]
+df_logs["Bed Number"] = df_logs["Bed Number"].astype(np.uint8)
+df_logs["Time Start"] = df_logs["Time Start"].astype(np.uint8)
+df_logs["Time End"] = df_logs["Time End"].astype(np.uint8)
+df_logs["HFR_Count"] = df_logs["HFR_Count"].astype(np.uint8)
+df_logs["MFR_Count"] = df_logs["MFR_Count"].astype(np.uint8)
 df_frequency = df_logs
+
+# df_frequency = conn.execute("SELECT bed_number as Bed_Number , DATE(TIMESTAMP_MILLIS(CAST(timestamp_start AS INT64))) AS Date FROM Data GROUP BY Date, Hour")
 df_frequency = df_frequency.iloc[:, 0:2]
-df_frequency.columns = ["Bed Number", "Time Start"]
 df_frequency["Time Start"] = pd.to_datetime(df_frequency["Time Start"], unit='s') # change to datetime
 df_frequency["Date"] = df_frequency['Time Start'].dt.date # get date
 df_frequency['Hour'] = df_frequency['Time Start'].dt.hour# get hour
@@ -37,7 +57,6 @@ df_hour_freq ["Date"]=df_hour_freq ["Date"].apply(lambda x: x.strftime("%d/%m/%Y
 #calculating number of toilet visits per day 
 df_average_visits = df_logs
 df_average_visits = df_average_visits.iloc[:, 0:2]
-df_average_visits.columns = ["Bed Number", "Time Start"]
 df_average_visits["Time Start"] = pd.to_datetime(df_average_visits["Time Start"], unit='s') # change to datetime
 df_average_visits["Date"] = df_average_visits['Time Start'].dt.date # get date
 df_average_visits = df_average_visits.drop(columns = ["Time Start"])
@@ -48,8 +67,8 @@ df_average_visits = df_average_visits.groupby("Bed Number",as_index=False)["Freq
 df_average_visits.sort_values("Frequency", inplace=True ,ascending=False,ignore_index=True)
 
 #calculating patients by the HFR counts 
-df_hfr_count = df_logs.groupby("bed_number").sum()
-df_hfr_count = df_hfr_count[["hfr_count"]]
+df_hfr_count = df_logs.groupby("Bed Number").sum()
+df_hfr_count = df_hfr_count[["HFR_Count"]]
 df_hfr_count.reset_index(inplace = True)
 df_hfr_count.columns = ["Bed Number", "HFR Count"]
 df_hfr_count.sort_values("HFR Count", inplace=True ,ascending=False,ignore_index=True)
@@ -117,4 +136,4 @@ with hfr_count:
     st.write("This table shows the total number of times that a HFR position was detected in this patient since they were warded.")
     st.write(df_hfr_count)
 
-
+conn.close()
