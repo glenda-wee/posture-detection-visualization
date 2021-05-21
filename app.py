@@ -84,6 +84,7 @@ df_hfr_count.reset_index(inplace = True)
 df_hfr_count.columns = ["Bed Number", "HFR Count"]
 df_hfr_count.sort_values("HFR Count", inplace=True ,ascending=False,ignore_index=True)
 
+#if export function as a side bar 
 with st.sidebar:
     bed_export = st.selectbox('Export Log from Bed Number',range(1,39))
     if st.button("Export"):
@@ -95,25 +96,49 @@ with st.sidebar:
 with header: 
     st.title("Ward 37's HFR Patients")
     st.write("Creating the dashboard with fake data")
-    
+
+# Dataset    
 # with dataset: 
 #     st.header("The Dataset")
 #     st.write("These are the logs for HFR patients.")
 #     st.write(df_logs)
 
+
+#if export function in sidebar
 with refresh_bedno: 
     st.header("Refresh Bed Number Log") 
     st.write("This is the layout of Ward 37.")
     st.image("ward_layout.png")
     bed_refresh = st.selectbox('Insert a Bed Number',range(1,39))
-    # st.write('The Bed Number Log that you would like to refresh is ', option)
+
     if st.button("Refresh"):
         refresh_command = "DELETE FROM Data_38 WHERE bed_number={0}".format(int(bed_refresh))
         execute_query(conn, refresh_command)
+        ## if refresh button produces an error message
         # st.error("Refresh Bed Number {0}?".format(option))
         # if st.button("Yes"):
         #     command = "DELETE FROM Data_10 WHERE bed_number={0}".format(int(option))
         #     execute_query(conn, command)
+
+    
+# #if export function below refresh button
+# with refresh_bedno: 
+#     st.header("Refresh or Export Bed Number Log") 
+#     st.write("This is the layout of Ward 37.")
+#     st.image("ward_layout.png")
+#     bed_export = st.selectbox('Bed Number Log to Refresh',range(1,39))
+#     if st.button("Refresh"):
+#         refresh_command = "DELETE FROM Data_38 WHERE bed_number={0}".format(int(bed_export))
+#         execute_query(conn, refresh_command)
+#     bed_export = st.selectbox('Bed Number Log to Export',range(1,39))
+#     if st.button("Export"):
+#         now = datetime.datetime.now()
+#         timestamp_export = now.strftime("%d %m %Y %H%M")
+#         export_logs = df_logs[df_logs["Bed Number"] == bed_export]
+#         export_logs.to_csv('bed {0} fall risk log {1}.csv'.format(int(bed_export),timestamp_export),index=False)
+    
+        
+       
             
 # if we want to use numeric inputs
     # number = st.number_input('Insert a Bed Number',step = 1, min_value = 1, max_value = 38)
